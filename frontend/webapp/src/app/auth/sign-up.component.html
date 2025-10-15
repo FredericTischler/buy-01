@@ -1,0 +1,41 @@
+<div class="card auth-card">
+  <h2>Inscription</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>Email</label>
+    <input type="email" formControlName="email" placeholder="email@exemple.com" />
+    <div class="error-message" *ngIf="form.controls.email.invalid && form.controls.email.touched">
+      Adresse email invalide.
+    </div>
+
+    <label>Mot de passe</label>
+    <input type="password" formControlName="password" />
+    <div class="error-message" *ngIf="form.controls.password.invalid && form.controls.password.touched">
+      Minimum 8 caractères.
+    </div>
+
+    <label>Prénom</label>
+    <input type="text" formControlName="firstName" />
+
+    <label>Nom</label>
+    <input type="text" formControlName="lastName" />
+
+    <label>Rôle</label>
+    <select formControlName="role">
+      <option value="CLIENT">Client</option>
+      <option value="SELLER">Vendeur</option>
+    </select>
+
+    <div *ngIf="form.value.role === 'SELLER'">
+      <label>Avatar du vendeur (PNG/JPEG ≤ 2 MB)</label>
+      <input type="file" accept="image/png,image/jpeg" (change)="onAvatarSelected($event)" />
+      <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Preview avatar" class="avatar-preview" />
+    </div>
+
+    <button type="submit" [disabled]="loading">Créer le compte</button>
+  </form>
+  <p class="error-message" *ngIf="error">{{ error }}</p>
+  <p class="helper">
+    Déjà inscrit ?
+    <a routerLink="/auth/sign-in">Se connecter</a>
+  </p>
+</div>

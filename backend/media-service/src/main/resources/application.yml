@@ -1,0 +1,54 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: media-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://media-mongo:27017/mediadb}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:changeit-changeit-changeit-changeit-changeit}
+
+media:
+  storage:
+    location: ${MEDIA_STORAGE_PATH:/app/media-storage}
+    signing-secret: ${MEDIA_SIGNING_SECRET:media-sign-secret}
+    signed-url-ttl-seconds: ${MEDIA_SIGNED_URL_TTL:900}
+    internal-service-secret: ${MEDIA_INTERNAL_SECRET:internal-change-me}
+    max-file-size-bytes: 2097152
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://discovery-service:8761/eureka}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.buy01.mediaservice: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/test
+media:
+  storage:
+    location: ./build/test-media

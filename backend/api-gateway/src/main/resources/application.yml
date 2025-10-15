@@ -1,0 +1,78 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=1
+        - id: auth-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/products/**
+          filters:
+            - StripPrefix=1
+        - id: media-service
+          uri: lb://media-service
+          predicates:
+            - Path=/api/media/**
+          filters:
+            - StripPrefix=1
+        - id: user-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/docs/user/**
+          filters:
+            - RewritePath=/docs/user/(?<segment>.*), /${segment}
+        - id: product-docs
+          uri: lb://product-service
+          predicates:
+            - Path=/docs/product/**
+          filters:
+            - RewritePath=/docs/product/(?<segment>.*), /${segment}
+        - id: media-docs
+          uri: lb://media-service
+          predicates:
+            - Path=/docs/media/**
+          filters:
+            - RewritePath=/docs/media/(?<segment>.*), /${segment}
+        - id: discovery-ui
+          uri: http://discovery-service:8761
+          predicates:
+            - Path=/discovery/**
+          filters:
+            - StripPrefix=1
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost/fake
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:changeit-changeit-changeit-changeit-changeit}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

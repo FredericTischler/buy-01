@@ -1,0 +1,30 @@
+# Java
+**/target/
+**/build/
+**/.mvn/
+**/*.iml
+**/.classpath
+**/.project
+**/.settings/
+
+# Node
+frontend/webapp/node_modules/
+frontend/webapp/dist/
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Env files
+*.env
+*.env.local
+
+# Generated keys
+**/keystore.p12
+**/tls/*.pem
+**/tls/*.key

@@ -1,0 +1,35 @@
+.auth-card {
+  max-width: 420px;
+  margin: 2rem auto;
+}
+
+.auth-card h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-card button {
+  margin-top: 0.5rem;
+}
+
+.auth-card p {
+  margin-top: 1rem;
+}
+
+.helper {
+  font-size: 0.95rem;
+}
+
+.avatar-preview {
+  margin-top: 1rem;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}

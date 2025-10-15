@@ -1,0 +1,19 @@
+<header class="app-header">
+  <div class="container header-content">
+    <div class="brand">{{ title }}</div>
+    <nav class="nav-links">
+      <a routerLink="/products" routerLinkActive="active">Produits</a>
+      <a *ngIf="!authService.isAuthenticated()" routerLink="/auth/sign-in">Connexion</a>
+      <a *ngIf="!authService.isAuthenticated()" routerLink="/auth/sign-up">Inscription</a>
+      <a *ngIf="authService.isSeller()" routerLink="/dashboard">Dashboard</a>
+      <a *ngIf="authService.isSeller()" routerLink="/media">Médias</a>
+      <button *ngIf="authService.isAuthenticated()" (click)="logout()">Déconnexion</button>
+    </nav>
+  </div>
+</header>
+<main class="container">
+  <router-outlet></router-outlet>
+</main>
+<footer class="app-footer">
+  <div class="container">&copy; {{ title }} {{ currentYear }}</div>
+</footer>

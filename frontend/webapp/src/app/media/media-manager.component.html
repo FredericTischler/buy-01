@@ -1,0 +1,13 @@
+<div class="card">
+  <h2>Gestion des médias</h2>
+  <p>Chargez vos images produit (PNG/JPEG ≤ 2 MB). Conservez l'identifiant retourné pour l'associer à un produit.</p>
+  <input type="file" multiple accept="image/png,image/jpeg" (change)="onFilesSelected($event)" />
+  <p class="error-message" *ngIf="error">{{ error }}</p>
+  <div class="media-grid" *ngIf="uploads.length">
+    <article *ngFor="let media of uploads" class="card item">
+      <img [src]="media.secureUrl" [alt]="media.originalFilename" />
+      <div><strong>ID:</strong> {{ media.mediaId }}</div>
+      <div><strong>Taille:</strong> {{ media.size | number }} octets</div>
+    </article>
+  </div>
+</div>

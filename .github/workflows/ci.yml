@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request: {}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('backend/pom.xml', 'backend/**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+
+      - name: Backend Verify
+        run: mvn -f backend/pom.xml verify
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend/webapp
+        run: |
+          npm install
+          npx playwright install --with-deps
+
+      - name: Frontend Lint
+        working-directory: frontend/webapp
+        run: npm run lint
+
+      - name: Frontend Unit Tests
+        working-directory: frontend/webapp
+        run: npm run test -- --watch=false
+
+      - name: Frontend E2E
+        working-directory: frontend/webapp
+        run: npm run e2e -- --reporter=line
+
+      - name: Frontend Build
+        working-directory: frontend/webapp
+        run: npm run build -- --configuration production
+
+      - name: Docker Build
+        run: docker compose -f infra/docker-compose.yml build
+        env:
+          JWT_SECRET: changemechangemechangemechangeme123456
+          MEDIA_SIGNING_SECRET: mediasigningsecretchangeme123456
+          MEDIA_INTERNAL_SECRET: internalchangeme

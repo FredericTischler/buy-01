@@ -1,0 +1,54 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: product-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://product-mongo:27017/productdb}
+  cache:
+    type: simple
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:changeit-changeit-changeit-changeit-changeit}
+
+media:
+  service:
+    base-url: ${MEDIA_SERVICE_URL:http://media-service:8083}
+    enabled: true
+    internal-secret: ${MEDIA_INTERNAL_SECRET:internal-change-me}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://discovery-service:8761/eureka}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.buy01.productservice: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/test
+media:
+  service:
+    enabled: false

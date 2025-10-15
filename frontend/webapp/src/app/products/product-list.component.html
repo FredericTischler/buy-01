@@ -1,0 +1,19 @@
+<section>
+  <h2>Catalogue</h2>
+  <p *ngIf="loading">Chargement...</p>
+  <p class="error-message" *ngIf="error">{{ error }}</p>
+  <div class="grid" *ngIf="!loading && products.length">
+    <article class="card" *ngFor="let product of products">
+      <img
+        class="product-image"
+        *ngIf="product.media?.length"
+        [src]="product.media[0].secureUrl"
+        [alt]="product.name"
+      />
+      <h3>{{ product.name }}</h3>
+      <p class="price">{{ product.price | currency: 'EUR' }}</p>
+      <p>{{ product.description }}</p>
+    </article>
+  </div>
+  <p *ngIf="!loading && !products.length">Aucun produit pour le moment.</p>
+</section>
