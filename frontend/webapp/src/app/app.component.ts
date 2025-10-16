@@ -1,22 +1,9 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { NgIf } from '@angular/common';
-import { AuthService } from './core/services/auth.service';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, NgIf],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrl: './app.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {
-  title = 'Buy01 Marketplace';
-  currentYear = new Date().getFullYear();
-
-  constructor(public authService: AuthService) {}
-
-  logout() {
-    this.authService.logout();
-  }
-}
+export class AppComponent {}

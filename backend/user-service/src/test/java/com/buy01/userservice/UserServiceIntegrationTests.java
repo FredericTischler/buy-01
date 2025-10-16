@@ -8,6 +8,7 @@ import com.buy01.userservice.dto.RegisterRequest;
 import com.buy01.userservice.dto.UpdateProfileRequest;
 import com.buy01.userservice.exception.ApiException;
 import com.buy01.userservice.model.Role;
+import com.buy01.userservice.repository.UserRepository;
 import com.buy01.userservice.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,10 +37,15 @@ class UserServiceIntegrationTests {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private RegisterRequest sellerRequest;
 
     @BeforeEach
     void setup() {
+        userRepository.deleteAll();
+
         sellerRequest = new RegisterRequest();
         sellerRequest.setEmail("seller@example.com");
         sellerRequest.setPassword("Secret123!");

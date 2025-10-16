@@ -1,102 +1,158 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, signal } from '@angular/core';
+import { inject, Injectable, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { tap, throwError } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { TokenStorageService } from './token-storage.service';
+import { catchError, finalize, map, Observable, of, tap, throwError } from 'rxjs';
 
-export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: UserProfile;
+import { AuthCredentials, AuthResponse, SignupPayload } from '../models/auth.model';
+import { ToastService } from './toast.service';
+import { StorageService } from './storage.service';
+import { AuthApiService } from '../api/auth-api.service';
+import { User, UserRole } from '../models/user.model';
+
+interface AuthState {
+  accessToken: string | null;
+  user: User | null;
 }
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: 'CLIENT' | 'SELLER';
-  avatarMediaId?: string;
-}
+const AUTH_STORAGE_KEY = 'buy01.auth.state';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly apiUrl = environment.apiUrl;
-  private readonly userState = signal<UserProfile | null>(null);
+  private readonly storage = inject(StorageService);
+  private readonly toastService = inject(ToastService);
+  private readonly authApi = inject(AuthApiService);
+  private readonly router = inject(Router);
 
-  isAuthenticated = computed(() => this.userState() !== null);
-  isSeller = computed(() => this.userState()?.role === 'SELLER');
-  currentUser = computed(() => this.userState());
+  private readonly _state = signal<AuthState>({ accessToken: null, user: null });
 
-  constructor(
-    private http: HttpClient,
-    private tokenStorage: TokenStorageService,
-    private router: Router
-  ) {
-    const accessToken = this.tokenStorage.getAccessToken();
-    const role = this.tokenStorage.role();
-    if (accessToken && role) {
-      // Attempt to fetch profile silently
-      this.fetchProfile().subscribe({
-        next: (user) => this.userState.set(user),
-        error: () => this.logout(false)
-      });
+  readonly user = computed(() => this._state().user);
+  readonly token = computed(() => this._state().accessToken);
+  readonly isAuthenticated = computed(() => !!this._state().user);
+  readonly roles = computed<UserRole[]>(() => this._state().user?.roles ?? []);
+
+  constructor() {
+    this.restoreSession();
+  }
+
+  login(credentials: AuthCredentials): Observable<User> {
+    return this.authApi.login(credentials).pipe(
+      tap(response => this.persistSession(response, !!credentials.rememberMe)),
+      map(response => response.user),
+      tap(user => {
+        this.toastService.success(
+          'Connexion réussie',
+          `Bienvenue ${user.profile?.firstName ?? user.email}`,
+        );
+      }),
+      catchError(error => {
+        this.toastService.error('Connexion impossible', this.extractErrorMessage(error));
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  signup(payload: SignupPayload): Observable<User> {
+    return this.authApi.signup(payload).pipe(
+      tap(response => this.persistSession(response, true)),
+      map(response => response.user),
+      tap(() => this.toastService.success('Inscription réussie', 'Votre compte a été créé.')),
+      catchError(error => {
+        this.toastService.error('Inscription impossible', this.extractErrorMessage(error));
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  refresh(): Observable<AuthResponse | null> {
+    const accessToken = this.token();
+    if (!accessToken) {
+      return of(null);
+    }
+
+    return this.authApi.refresh().pipe(
+      tap(response => this.persistSession(response, true)),
+      catchError(error => {
+        this.clearSession();
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  logout(): Observable<void> {
+    return this.authApi.logout().pipe(
+      catchError(() => of(undefined)),
+      finalize(() => {
+        this.clearSession();
+        this.toastService.success('Déconnexion', 'Vous êtes déconnecté.');
+        void this.router.navigate(['/auth/signin']);
+      }),
+    );
+  }
+
+  forceLogout(message?: string): void {
+    this.clearSession();
+    if (message) {
+      this.toastService.warning('Session terminée', message);
+    }
+    void this.router.navigate(['/auth/signin']);
+  }
+
+  hasRole(expectedRoles: UserRole[] | UserRole): boolean {
+    const roles = Array.isArray(expectedRoles) ? expectedRoles : [expectedRoles];
+    return roles.some(role => this.roles().includes(role));
+  }
+
+  isSeller(): boolean {
+    return this.hasRole('SELLER');
+  }
+
+  getAccessToken(): string | null {
+    return this.token();
+  }
+
+  updateUser(user: User): void {
+    const current = this._state();
+    this._state.set({ ...current, user });
+    this.storage.setItem(AUTH_STORAGE_KEY, { ...current, user });
+  }
+
+  private persistSession(response: AuthResponse, remember: boolean): void {
+    const payload: AuthState = {
+      accessToken: response.accessToken ?? null,
+      user: response.user,
+    };
+
+    this._state.set(payload);
+
+    if (remember) {
+      this.storage.setItem(AUTH_STORAGE_KEY, payload);
+    } else {
+      this.storage.removeItem(AUTH_STORAGE_KEY);
     }
   }
 
-  register(payload: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    role: 'CLIENT' | 'SELLER';
-    avatarMediaId?: string | null;
-  }) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/users/register`, payload).pipe(
-      tap((response) => this.handleAuthResponse(response))
-    );
+  private clearSession(): void {
+    this._state.set({ accessToken: null, user: null });
+    this.storage.removeItem(AUTH_STORAGE_KEY);
   }
 
-  login(credentials: { email: string; password: string }) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
-      tap((response) => this.handleAuthResponse(response))
-    );
-  }
-
-  refresh() {
-    const refreshToken = this.tokenStorage.getRefreshToken();
-    if (!refreshToken) {
-      this.logout();
-      return throwError(() => new Error('Missing refresh token'));
-    }
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/auth/refresh`, { refreshToken })
-      .pipe(tap((response) => this.handleAuthResponse(response)));
-  }
-
-  fetchProfile() {
-    return this.http.get<UserProfile>(`${this.apiUrl}/users/me`).pipe(
-      tap((user) => this.userState.set(user))
-    );
-  }
-
-  updateProfile(payload: { firstName: string; lastName: string; avatarMediaId?: string | null }) {
-    return this.http.put<UserProfile>(`${this.apiUrl}/users/me`, payload).pipe(
-      tap((user) => this.userState.set(user))
-    );
-  }
-
-  logout(redirect = true) {
-    this.tokenStorage.clear();
-    this.userState.set(null);
-    if (redirect) {
-      this.router.navigate(['/auth/sign-in']);
+  private restoreSession(): void {
+    const persisted = this.storage.getItem<AuthState>(AUTH_STORAGE_KEY);
+    if (persisted?.accessToken && persisted.user) {
+      this._state.set(persisted);
     }
   }
 
-  private handleAuthResponse(response: AuthResponse) {
-    this.tokenStorage.setTokens(response.accessToken, response.refreshToken, response.user.role);
-    this.userState.set(response.user);
+  private extractErrorMessage(error: unknown): string | undefined {
+    if (!error || typeof error !== 'object') {
+      return undefined;
+    }
+
+    const maybeError = error as { error?: { message?: string | string[] } };
+    const message = maybeError.error?.message;
+    if (Array.isArray(message)) {
+      return message.join(' ');
+    }
+
+    return message ?? 'Veuillez vérifier vos identifiants.';
   }
 }

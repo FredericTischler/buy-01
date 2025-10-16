@@ -1,0 +1,137 @@
+<section class="mx-auto w-full max-w-4xl px-4 py-10">
+  <header class="mb-6">
+    <h1 class="text-3xl font-semibold tracking-tight text-foreground">Mon profil</h1>
+    <p class="text-sm text-muted-foreground">
+      Mettez à jour vos informations personnelles et votre mot de passe.
+    </p>
+  </header>
+
+  @if (loading()) {
+    <div class="grid gap-6 lg:grid-cols-2">
+      <ui-card>
+        <div class="space-y-4">
+          <ui-skeleton height="200px" />
+          <ui-skeleton height="20px" width="70%" />
+          <ui-skeleton height="16px" width="50%" />
+          <ui-skeleton height="16px" width="60%" />
+        </div>
+      </ui-card>
+      <ui-card>
+        <div class="space-y-4">
+          <ui-skeleton height="20px" width="60%" />
+          <ui-skeleton height="16px" width="80%" />
+          <ui-skeleton height="16px" width="75%" />
+        </div>
+      </ui-card>
+    </div>
+  } @else {
+    <div class="grid gap-6 lg:grid-cols-2">
+      <ui-card>
+        <div class="space-y-5">
+          <div class="flex items-center gap-4">
+            <div class="relative h-24 w-24 overflow-hidden rounded-full bg-muted">
+              @if (profileForm.getRawValue().avatarMediaId) {
+                <img
+                  [src]="profileForm.getRawValue().avatarMediaId"
+                  alt="Avatar utilisateur"
+                  class="h-full w-full object-cover"
+                />
+              } @else {
+                <div class="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  Avatar
+                </div>
+              }
+            </div>
+            <div>
+              <p class="text-sm text-muted-foreground">
+                Utilisez un média téléversé et indiquez son URL publique.
+              </p>
+            </div>
+          </div>
+
+          <form class="space-y-4" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="space-y-2">
+                <label uiLabel for="profile-firstname">Prénom</label>
+                <input
+                  id="profile-firstname"
+                  uiInput
+                  placeholder="Prénom"
+                  formControlName="firstName"
+                />
+              </div>
+              <div class="space-y-2">
+                <label uiLabel for="profile-lastname">Nom</label>
+                <input id="profile-lastname" uiInput placeholder="Nom" formControlName="lastName" />
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label uiLabel for="profile-email">Adresse e-mail</label>
+              <input id="profile-email" uiInput formControlName="email" readonly />
+            </div>
+
+            <div class="space-y-2">
+              <label uiLabel for="avatar-id">URL de l'avatar</label>
+              <input
+                id="avatar-id"
+                uiInput
+                placeholder="https://..."
+                formControlName="avatarMediaId"
+              />
+            </div>
+
+            <div class="flex justify-end">
+              <button hlmBtn type="submit">Enregistrer</button>
+            </div>
+          </form>
+        </div>
+      </ui-card>
+
+      <ui-card>
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-lg font-semibold text-foreground">Modifier mon mot de passe</h2>
+            <p class="text-xs text-muted-foreground">
+              Le mot de passe doit contenir au minimum 8 caractères.
+            </p>
+          </div>
+
+          <form class="space-y-4" [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
+            <div class="space-y-2">
+              <label uiLabel for="current-password">Mot de passe actuel</label>
+              <input
+                id="current-password"
+                type="password"
+                uiInput
+                formControlName="currentPassword"
+              />
+            </div>
+            <div class="space-y-2">
+              <label uiLabel for="new-password">Nouveau mot de passe</label>
+              <input id="new-password" type="password" uiInput formControlName="newPassword" />
+            </div>
+            <div class="space-y-2">
+              <label uiLabel for="confirm-password">Confirmation</label>
+              <input
+                id="confirm-password"
+                type="password"
+                uiInput
+                formControlName="confirmPassword"
+              />
+              <p
+                *ngIf="passwordForm.get('confirmPassword')?.hasError('mismatch')"
+                class="text-xs text-destructive"
+              >
+                Les mots de passe ne correspondent pas.
+              </p>
+            </div>
+            <div class="flex justify-end">
+              <button hlmBtn variant="secondary" type="submit">Mettre à jour</button>
+            </div>
+          </form>
+        </div>
+      </ui-card>
+    </div>
+  }
+</section>

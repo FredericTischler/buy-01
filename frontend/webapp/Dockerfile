@@ -1,12 +1,23 @@
-FROM node:20.11-alpine AS build
+# Stage 1 - build the Angular application
+FROM node:20-alpine AS build
+
 WORKDIR /app
-COPY frontend/webapp/package.json ./
-RUN npm install
-COPY frontend/webapp ./
+
+COPY frontend/webapp/package.json frontend/webapp/package-lock.json ./
+RUN npm ci
+
+COPY frontend/webapp/ ./
+
 RUN npm run build -- --configuration production
 
-FROM nginx:1.25-alpine
-COPY infra/nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist/webapp /usr/share/nginx/html
+# Stage 2 - serve via nginx
+FROM nginx:1.27-alpine AS production
+
+RUN rm /etc/nginx/conf.d/default.conf
+COPY frontend/webapp/nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=build /app/dist/webapp/browser /usr/share/nginx/html
+
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]

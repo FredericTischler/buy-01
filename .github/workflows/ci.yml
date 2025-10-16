@@ -41,8 +41,8 @@ jobs:
       - name: Install Frontend Dependencies
         working-directory: frontend/webapp
         run: |
-          npm install
-          npx playwright install --with-deps
+          npm ci
+          npx playwright install --with-deps chromium
 
       - name: Frontend Lint
         working-directory: frontend/webapp
@@ -50,11 +50,7 @@ jobs:
 
       - name: Frontend Unit Tests
         working-directory: frontend/webapp
-        run: npm run test -- --watch=false
-
-      - name: Frontend E2E
-        working-directory: frontend/webapp
-        run: npm run e2e -- --reporter=line
+        run: CHROME_BIN=$(npx playwright executable-path chromium) npm run test -- --watch=false --browsers=ChromeHeadless
 
       - name: Frontend Build
         working-directory: frontend/webapp

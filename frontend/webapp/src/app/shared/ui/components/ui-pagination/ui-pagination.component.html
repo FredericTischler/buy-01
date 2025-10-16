@@ -1,0 +1,42 @@
+<nav class="flex flex-wrap items-center justify-between gap-3" aria-label="Pagination">
+  <button
+    type="button"
+    hlmBtn
+    variant="ghost"
+    size="sm"
+    (click)="selectPrevious()"
+    [disabled]="isFirst"
+  >
+    Précédent
+  </button>
+
+  <ul class="flex items-center gap-1">
+    <li *ngFor="let item of items">
+      <ng-container [ngSwitch]="item.type">
+        <span
+          *ngSwitchCase="'ellipsis'"
+          aria-hidden="true"
+          class="px-2 text-sm font-medium text-muted-foreground"
+        >
+          …
+        </span>
+        <button
+          *ngSwitchCase="'page'"
+          type="button"
+          hlmBtn
+          size="sm"
+          [variant]="item.value === page ? 'secondary' : 'ghost'"
+          class="min-w-[2.5rem] justify-center"
+          (click)="selectPage(item.value)"
+          [attr.aria-current]="item.value === page ? 'page' : null"
+        >
+          {{ item.value }}
+        </button>
+      </ng-container>
+    </li>
+  </ul>
+
+  <button type="button" hlmBtn variant="ghost" size="sm" (click)="selectNext()" [disabled]="isLast">
+    Suivant
+  </button>
+</nav>

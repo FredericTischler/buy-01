@@ -13,26 +13,18 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/users/**
-          filters:
-            - StripPrefix=1
         - id: auth-service
           uri: lb://user-service
           predicates:
             - Path=/api/auth/**
-          filters:
-            - StripPrefix=1
         - id: product-service
           uri: lb://product-service
           predicates:
             - Path=/api/products/**
-          filters:
-            - StripPrefix=1
         - id: media-service
           uri: lb://media-service
           predicates:
             - Path=/api/media/**
-          filters:
-            - StripPrefix=1
         - id: user-docs
           uri: lb://user-service
           predicates:
@@ -76,3 +68,8 @@ management:
 logging:
   level:
     org.springframework.cloud.gateway: INFO
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://discovery-service:8761/eureka}

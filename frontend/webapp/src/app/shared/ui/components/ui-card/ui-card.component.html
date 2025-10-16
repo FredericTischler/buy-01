@@ -1,0 +1,9 @@
+<div
+  class="flex flex-col gap-4 p-6 transition-colors"
+  [ngClass]="interactive ? ['cursor-pointer', 'hover:bg-muted/50'] : []"
+>
+  <ng-content select="[card-media]"></ng-content>
+  <ng-content select="[card-header]"></ng-content>
+  <ng-content></ng-content>
+  <ng-content select="[card-footer]"></ng-content>
+</div>

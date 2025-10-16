@@ -1,0 +1,13 @@
+<nav class="flex items-center gap-1" aria-label="Navigation">
+  <a
+    *ngFor="let item of items"
+    hlmBtn
+    variant="ghost"
+    class="text-sm"
+    routerLinkActive="bg-primary/10 text-primary"
+    [routerLinkActiveOptions]="{ exact: item.exact ?? true }"
+    [routerLink]="item.route"
+  >
+    {{ item.label }}
+  </a>
+</nav>

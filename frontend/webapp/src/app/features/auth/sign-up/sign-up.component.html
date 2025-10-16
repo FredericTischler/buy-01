@@ -1,0 +1,139 @@
+<div card-header class="space-y-1">
+  <h2 class="text-2xl font-semibold tracking-tight">Créer un compte</h2>
+  <p class="text-sm text-muted-foreground">
+    Rejoignez buy-01 en tant que client ou vendeur et accédez à un tableau de bord complet.
+  </p>
+</div>
+
+<form class="space-y-5" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="space-y-2">
+      <label uiLabel for="firstName">Prénom</label>
+      <input
+        id="firstName"
+        uiInput
+        placeholder="Jeanne"
+        formControlName="firstName"
+        autocomplete="given-name"
+      />
+      <p
+        *ngIf="
+          controlHasError('firstName', 'required') || controlHasError('firstName', 'pattern')
+        "
+        class="text-xs text-destructive"
+      >
+        Le prénom est obligatoire.
+      </p>
+      <p *ngIf="controlHasError('firstName', 'maxlength')" class="text-xs text-destructive">
+        Le prénom ne peut dépasser 60 caractères.
+      </p>
+    </div>
+    <div class="space-y-2">
+      <label uiLabel for="lastName">Nom</label>
+      <input
+        id="lastName"
+        uiInput
+        placeholder="Dupont"
+        formControlName="lastName"
+        autocomplete="family-name"
+      />
+      <p
+        *ngIf="
+          controlHasError('lastName', 'required') || controlHasError('lastName', 'pattern')
+        "
+        class="text-xs text-destructive"
+      >
+        Le nom est obligatoire.
+      </p>
+      <p *ngIf="controlHasError('lastName', 'maxlength')" class="text-xs text-destructive">
+        Le nom ne peut dépasser 60 caractères.
+      </p>
+    </div>
+  </div>
+
+  <div class="space-y-2">
+    <label uiLabel for="signup-email">Adresse e-mail</label>
+    <input
+      id="signup-email"
+      type="email"
+      uiInput
+      placeholder="contact@exemple.com"
+      formControlName="email"
+      autocomplete="email"
+    />
+    <p *ngIf="controlHasError('email', 'required')" class="text-xs text-destructive">
+      L'adresse e-mail est obligatoire.
+    </p>
+    <p *ngIf="controlHasError('email', 'email')" class="text-xs text-destructive">
+      Format d'adresse e-mail invalide.
+    </p>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="space-y-2">
+      <label uiLabel for="signup-password">Mot de passe</label>
+      <input
+        id="signup-password"
+        type="password"
+        uiInput
+        placeholder="••••••••"
+        formControlName="password"
+        autocomplete="new-password"
+      />
+      <p *ngIf="controlHasError('password', 'required')" class="text-xs text-destructive">
+        Mot de passe requis.
+      </p>
+      <p *ngIf="controlHasError('password', 'minlength')" class="text-xs text-destructive">
+        Minimum 8 caractères.
+      </p>
+    </div>
+    <div class="space-y-2">
+      <label uiLabel for="confirmPassword">Confirmation</label>
+      <input
+        id="confirmPassword"
+        type="password"
+        uiInput
+        placeholder="••••••••"
+        formControlName="confirmPassword"
+        autocomplete="new-password"
+      />
+      <p *ngIf="controlHasError('confirmPassword', 'required')" class="text-xs text-destructive">
+        Merci de confirmer votre mot de passe.
+      </p>
+      <p *ngIf="controlHasError('confirmPassword', 'mismatch')" class="text-xs text-destructive">
+        Les mots de passe ne correspondent pas.
+      </p>
+    </div>
+  </div>
+
+  <div class="space-y-2">
+    <span class="text-sm font-medium">Je souhaite créer un compte</span>
+    <div class="flex flex-wrap gap-2">
+      <button
+        *ngFor="let option of roles"
+        type="button"
+        hlmBtn
+        [variant]="form.value.role === option.value ? 'default' : 'ghost'"
+        (click)="form.patchValue({ role: option.value })"
+      >
+        {{ option.label }}
+      </button>
+    </div>
+  </div>
+
+  <button hlmBtn class="w-full justify-center" type="submit" [disabled]="submitting()">
+    <span *ngIf="!submitting(); else signupLoading">Créer mon compte</span>
+  </button>
+
+  <p class="text-center text-sm text-muted-foreground">
+    Déjà inscrit ?
+    <a routerLink="/auth/signin" class="font-medium text-primary hover:underline">Se connecter</a>
+  </p>
+</form>
+
+<ng-template #signupLoading>
+  <span class="flex items-center justify-center gap-2">
+    <span class="h-3 w-3 animate-ping rounded-full bg-primary"></span>
+    Création de votre compte...
+  </span>
+</ng-template>

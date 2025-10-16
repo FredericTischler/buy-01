@@ -1,0 +1,40 @@
+<div class="flex flex-col gap-4">
+  <div role="tablist" class="flex items-center gap-2 overflow-x-auto border-b border-border pb-1">
+    <ng-container *ngIf="tabs?.length; else tabsFallback">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        hlmBtn
+        size="sm"
+        [variant]="isActive(tab) ? 'secondary' : 'ghost'"
+        class="flex items-center gap-2 whitespace-nowrap"
+        [attr.role]="'tab'"
+        [attr.aria-selected]="isActive(tab)"
+        [attr.aria-controls]="tab.value + '-panel'"
+        [disabled]="tab.disabled"
+        (click)="selectTab(tab)"
+      >
+        <span>{{ tab.label }}</span>
+        <ui-badge *ngIf="tab.badge" variant="secondary">{{ tab.badge }}</ui-badge>
+      </button>
+    </ng-container>
+  </div>
+
+  <section
+    *ngIf="currentPanel as panel; else noPanel"
+    class="rounded-lg"
+    [attr.id]="currentTab + '-panel'"
+    role="tabpanel"
+    tabindex="0"
+  >
+    <ng-container *ngTemplateOutlet="panel.template"></ng-container>
+  </section>
+
+  <ng-template #tabsFallback>
+    <ng-content select="[tabs-actions]"></ng-content>
+  </ng-template>
+
+  <ng-template #noPanel>
+    <ng-content></ng-content>
+  </ng-template>
+</div>

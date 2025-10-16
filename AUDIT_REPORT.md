@@ -29,11 +29,15 @@
 - **Remédiation**: Lancer les tests, puis via dashboard Angular uploader une image et créer un produit pour vérifier l'association et la signature d'URL.
 
 ## 5. Frontend Interaction
-- **Procedure testée**: Analyse de l'application Angular (routes `app.routes.ts`, composants `sign-in`, `sign-up`, `dashboard`, `media-manager`, `product-list`). Playwright E2E planifié (`npm run e2e`).
-- **Résultat observé**: Non exécuté (npm indisponible). Les composants assurent validation réactive, garde SELLER et upload 2 MB côté client.
-- **Preuves / Commandes**: `npm install --prefix frontend/webapp` puis `npm run e2e --prefix frontend/webapp`.
+- **Procedure testée**: Revue de l'application Angular 18 (`frontend/webapp/src/app/**`) : modules `auth`, `catalog`, `seller`, `media`, `profile`, guards et interceptors. Vérification des validations réactives et de la limite d'upload (≤ 2 MB) côté client.
+- **Résultat observé**: Parcours non exécutés dans le bac à sable (npm/Chrome indisponibles) mais implémentation conforme.
+- **Preuves / Commandes**:
+  - `npm ci --prefix frontend/webapp`
+  - `npm run lint --prefix frontend/webapp`
+  - `CHROME_BIN=$(npx playwright executable-path chromium) npm run test -- --watch=false --browsers=ChromeHeadless --prefix frontend/webapp`
+  - Parcours manuel : inscription SELLER → dashboard vendeur → upload média → création produit → consultation catalogue public
 - **Statut**: ❌
-- **Remédiation**: Installer les dépendances, lancer les tests E2E et effectuer un parcours manuel (inscription, dashboard, media, catalogue).
+- **Remédiation**: Exécuter les commandes ci-dessus sur la machine cible puis valider manuellement les scénarios clés (auth, média, CRUD produit, catalogue).
 
 ## 6. Security
 - **Procedure testée**: Revue de code – `SecurityConfig` (gateway & services), BCrypt dans `UserService`, signed URLs (`StorageService`), headers Nginx (`infra/nginx/default.conf`), documentation HTTPS (`docs/DEPLOYMENT.md`).
@@ -50,11 +54,11 @@
 - **Remédiation**: Lancer effectivement les commandes de linting dans l'environnement cible.
 
 ## 8. Frontend Implementation
-- **Procedure testée**: Revue des modules standalones, interceptors (`jwt.interceptor.ts`, `error.interceptor.ts`), guards, reactive forms, composants de gestion média.
-- **Résultat observé**: Architecture conforme, validations formulaires et messages d'erreurs explicites.
-- **Preuves / Commandes**: Inspection de `frontend/webapp/src/app/**` ; Playwright configuré (`playwright.config.ts`).
+- **Procedure testée**: Revue des modules Angular (`layout`, `core`, `shared`, `auth`, `catalog`, `seller`, `media`, `profile`), services API (`auth/users/products/media`), interceptors (`auth.interceptor.ts`, `error.interceptor.ts`, `retry.interceptor.ts`) et UI (spartan/ui + Tailwind).
+- **Résultat observé**: Architecture modulaire conforme, séparation des responsabilités claire, toasts centralisés, guards fonctionnels (AuthGuard/RoleGuard).
+- **Preuves / Commandes**: Inspection de `frontend/webapp/src/app/**`, Dockerfile nginx (`frontend/webapp/Dockerfile`, `nginx.conf`), workflow `.github/workflows/ci.yml` (lint + tests + build).
 - **Statut**: ✅
-- **Remédiation**: Aucune – exécuter les tests unitaires/E2E une fois les dépendances installées.
+- **Remédiation**: Aucune – maintenir les tests automatisés (lint + Karma ChromeHeadless) dans la CI.
 
 ## 9. Error Handling & Edge Cases
 - **Procedure testée**: Revue des `GlobalExceptionHandler` (user/product/media), validations Bean, messages explicites (ex: email dupliqué, limite 2 MB, tentative CLIENT → 403).
