@@ -10,35 +10,35 @@ spring:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
       routes:
         - id: user-service
-          uri: lb://user-service
+          uri: http://user-service:8081
           predicates:
             - Path=/api/users/**
         - id: auth-service
-          uri: lb://user-service
+          uri: http://user-service:8081
           predicates:
             - Path=/api/auth/**
         - id: product-service
-          uri: lb://product-service
+          uri: http://product-service:8082
           predicates:
             - Path=/api/products/**
         - id: media-service
-          uri: lb://media-service
+          uri: http://media-service:8083
           predicates:
             - Path=/api/media/**
         - id: user-docs
-          uri: lb://user-service
+          uri: http://user-service:8081
           predicates:
             - Path=/docs/user/**
           filters:
             - RewritePath=/docs/user/(?<segment>.*), /${segment}
         - id: product-docs
-          uri: lb://product-service
+          uri: http://product-service:8082
           predicates:
             - Path=/docs/product/**
           filters:
             - RewritePath=/docs/product/(?<segment>.*), /${segment}
         - id: media-docs
-          uri: lb://media-service
+          uri: http://media-service:8083
           predicates:
             - Path=/docs/media/**
           filters:
@@ -71,5 +71,4 @@ logging:
 
 eureka:
   client:
-    serviceUrl:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://discovery-service:8761/eureka}
+    enabled: false

@@ -73,7 +73,7 @@ npm install --prefix frontend/webapp
 ### Démarrage standard
 
 ```bash
-docker compose --env-file .env -f infra/docker-compose.yml up -d --build
+docker compose -f infra/docker-compose.yml up -d --build
 ```
 
 Services accessibles :

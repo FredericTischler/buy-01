@@ -6,6 +6,7 @@ import com.buy01.userservice.dto.RefreshTokenRequest;
 import com.buy01.userservice.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +32,13 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public AuthenticationResponse refresh(@RequestBody @Valid RefreshTokenRequest request) {
         return userService.refreshToken(request);
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof String userId) {
+            userService.logout(userId);
+        }
     }
 }

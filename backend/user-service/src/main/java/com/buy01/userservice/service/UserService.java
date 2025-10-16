@@ -83,6 +83,10 @@ public class UserService {
         return new AuthenticationResponse(tokenPair.accessToken(), tokenPair.refreshToken(), userMapper.toResponse(user));
     }
 
+    public void logout(String userId) {
+        refreshTokenRepository.deleteByUserId(userId);
+    }
+
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
         Claims claims = parseAndValidateRefreshToken(request.getRefreshToken());
         String userId = claims.getSubject();

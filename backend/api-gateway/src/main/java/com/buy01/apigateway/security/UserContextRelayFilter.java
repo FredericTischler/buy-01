@@ -22,8 +22,8 @@ public class UserContextRelayFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)
-                .defaultIfEmpty(null)
-                .flatMap(authentication -> propagateHeaders(exchange, chain, authentication));
+                .flatMap(authentication -> propagateHeaders(exchange, chain, authentication))
+                .switchIfEmpty(chain.filter(exchange));
     }
 
     private Mono<Void> propagateHeaders(

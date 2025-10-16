@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { PaginatedResponse } from '../models/pagination.model';
 import { Product, ProductListingFilters, UpsertProductPayload } from '../models/product.model';
@@ -13,7 +13,9 @@ export class ProductsApiService {
 
   list(filters: ProductListingFilters = {}): Observable<PaginatedResponse<Product>> {
     const params = this.buildFilters(filters);
-    return this.http.get<PaginatedResponse<Product>>(`${this.baseUrl}/products`, { params });
+    return this.http
+      .get<PaginatedResponse<Product> | Product[]>(`${this.baseUrl}/products`, { params })
+      .pipe(map(response => this.normalizeResponse(response)));
   }
 
   getById(productId: string): Observable<Product> {
@@ -56,5 +58,22 @@ export class ProductsApiService {
     });
 
     return params;
+  }
+
+  private normalizeResponse(
+    response: PaginatedResponse<Product> | Product[],
+  ): PaginatedResponse<Product> {
+    if (Array.isArray(response)) {
+      const items = response;
+      return {
+        items,
+        page: 1,
+        pageSize: items.length,
+        totalItems: items.length,
+        totalPages: items.length ? 1 : 0,
+      };
+    }
+
+    return response;
   }
 }
