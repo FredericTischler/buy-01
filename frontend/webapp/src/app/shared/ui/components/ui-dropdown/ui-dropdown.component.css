@@ -1,7 +1,0 @@
-:host {
-  display: inline-flex;
-}
-
-[role='menu'] ::ng-deep [role='menuitem'] {
-  cursor: pointer;
-}
