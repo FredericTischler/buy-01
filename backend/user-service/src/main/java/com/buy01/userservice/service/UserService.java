@@ -50,9 +50,6 @@ public class UserService {
         if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Email already in use");
         }
-        if (request.getRole() == Role.SELLER && request.getAvatarMediaId() == null) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Seller must provide an avatar image");
-        }
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
