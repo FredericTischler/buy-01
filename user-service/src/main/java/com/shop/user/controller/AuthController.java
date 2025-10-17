@@ -4,6 +4,7 @@ import com.shop.user.domain.User;
 import com.shop.user.dto.AuthResponse;
 import com.shop.user.dto.LoginRequest;
 import com.shop.user.dto.SignupRequest;
+import com.shop.user.dto.UserResponse;
 import com.shop.user.exception.InvalidCredentialsException;
 import com.shop.user.mapper.UserMapper;
 import com.shop.user.service.JwtService;
@@ -29,13 +30,9 @@ public class AuthController {
     private final UserMapper userMapper;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
+    public ResponseEntity<UserResponse> signup(@Valid @RequestBody SignupRequest request) {
         User user = userService.createUser(request);
-        String token = jwtService.generateToken(user.getId().toHexString(), user.getRole());
-        AuthResponse response = AuthResponse.builder()
-                .token(token)
-                .user(userMapper.toUserResponse(user))
-                .build();
+        UserResponse response = userMapper.toUserResponse(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -48,7 +45,7 @@ public class AuthController {
             throw new InvalidCredentialsException();
         }
 
-        String token = jwtService.generateToken(user.getId().toHexString(), user.getRole());
+        String token = jwtService.issueToken(user.getId().toHexString(), user.getRole());
         AuthResponse response = AuthResponse.builder()
                 .token(token)
                 .user(userMapper.toUserResponse(user))

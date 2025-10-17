@@ -16,21 +16,22 @@ class JwtServiceTest {
     }
 
     @Test
-    void generateTokenShouldEncodeUserIdAndRole() {
+    void issueTokenShouldEncodeUserIdAndRole() {
         String userId = "6638ad6d0df7a95e7c2a1234";
         Role role = Role.CLIENT;
 
-        String token = jwtService.generateToken(userId, role);
+        String token = jwtService.issueToken(userId, role);
 
         assertThat(token).isNotBlank();
         assertThat(jwtService.isTokenValid(token, userId)).isTrue();
         assertThat(jwtService.extractUserId(token)).isEqualTo(userId);
         assertThat(jwtService.extractRole(token)).isEqualTo(role);
+        assertThat(jwtService.parseToken(token).getIssuedAt()).isNotNull();
     }
 
     @Test
     void isTokenValidShouldReturnFalseWhenUserIdDiffers() {
-        String token = jwtService.generateToken("6638ad6d0df7a95e7c2a1234", Role.SELLER);
+        String token = jwtService.issueToken("6638ad6d0df7a95e7c2a1234", Role.SELLER);
 
         assertThat(jwtService.isTokenValid(token, "anotherUserId")).isFalse();
     }

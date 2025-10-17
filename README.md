@@ -32,6 +32,16 @@ mvn spring-boot:run
 docker build -t user-service ./user-service
 ```
 
+### Local MongoDB (Docker)
+```bash
+# Start MongoDB with hostname mongo and default port mapped to localhost
+docker run --name user-mongo --hostname mongo -p 27017:27017 -d mongo:6.0
+
+# Stop & remove when no longer needed
+docker stop user-mongo
+docker rm user-mongo
+```
+
 ## Build & Test in IntelliJ IDEA
 1. **Configure JDK 17**
    - `File > Project Structure` (`Ctrl+Alt+Shift+S`) → *SDKs* → `+` → point to a JDK 17 (Temurin, Oracle…).
@@ -47,8 +57,14 @@ docker build -t user-service ./user-service
 
 IntelliJ’s terminal reuses the IDE environment: if you prefer, run `mvn clean package` there after confirming `JAVA_HOME` points to the configured JDK 17.
 
+### IntelliJ Run Configuration (Mongo override)
+- `Run > Edit Configurations…` → select `UserServiceApplication`.
+- Either set an environment variable `SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/userdb`
+  **or** add a VM option `-Dspring.data.mongodb.uri=mongodb://localhost:27017/userdb`.
+- Apply/save, then run. This ensures the service hits the local Dockerized Mongo.
+
 ## API
-- `POST /auth/signup` — register a CLIENT or SELLER; returns `{ token, user }`.
+- `POST /auth/signup` — register a CLIENT or SELLER; returns the created `UserResponse` (no password).
 - `POST /auth/login` — authenticate by email/password; returns `{ token, user }`.
 - `GET /users/me` — fetch the authenticated profile (requires `Authorization: Bearer <JWT>`).
 - `PUT /users/me` — update username/avatar for the authenticated user.

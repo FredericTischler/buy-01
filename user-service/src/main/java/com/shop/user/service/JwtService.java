@@ -27,7 +27,7 @@ public class JwtService {
         this.expirationMillis = expirationMillis;
     }
 
-    public String generateToken(String userId, Role role) {
+    public String issueToken(String userId, Role role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMillis);
         return Jwts.builder()
@@ -40,22 +40,22 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, String expectedUserId) {
-        Claims claims = parseClaims(token);
+        Claims claims = parseToken(token);
         boolean userIdMatches = expectedUserId.equals(claims.getSubject());
         boolean notExpired = claims.getExpiration().after(new Date());
         return userIdMatches && notExpired;
     }
 
     public String extractUserId(String token) {
-        return parseClaims(token).getSubject();
+        return parseToken(token).getSubject();
     }
 
     public Role extractRole(String token) {
-        String role = parseClaims(token).get("role", String.class);
+        String role = parseToken(token).get("role", String.class);
         return Role.valueOf(role);
     }
 
-    private Claims parseClaims(String token) {
+    public Claims parseToken(String token) {
         Jws<Claims> jws = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
