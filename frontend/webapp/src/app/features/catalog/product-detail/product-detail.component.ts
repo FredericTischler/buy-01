@@ -33,7 +33,7 @@ export class ProductDetailComponent implements OnInit {
 
   protected selectImage(index: number): void {
     const product = this.product();
-    if (!product || !product.images?.[index]) {
+    if (!product || !product.media?.[index]) {
       return;
     }
 
@@ -42,23 +42,23 @@ export class ProductDetailComponent implements OnInit {
 
   protected previousImage(): void {
     const product = this.product();
-    if (!product?.images?.length) {
+    if (!product?.media?.length) {
       return;
     }
 
     const current = this.selectedImageIndex();
-    const next = (current - 1 + product.images.length) % product.images.length;
+    const next = (current - 1 + product.media.length) % product.media.length;
     this.selectedImageIndex.set(next);
   }
 
   protected nextImage(): void {
     const product = this.product();
-    if (!product?.images?.length) {
+    if (!product?.media?.length) {
       return;
     }
 
     const current = this.selectedImageIndex();
-    const next = (current + 1) % product.images.length;
+    const next = (current + 1) % product.media.length;
     this.selectedImageIndex.set(next);
   }
 
@@ -66,8 +66,8 @@ export class ProductDetailComponent implements OnInit {
     void this.router.navigate(['/catalog']);
   }
 
-  protected trackByImage(index: number, image: { id: string }): string {
-    return image.id ?? index.toString();
+  protected trackByMedia(index: number, media: { mediaId?: string }): string {
+    return media.mediaId ?? index.toString();
   }
 
   private fetchProduct(productId: string): void {

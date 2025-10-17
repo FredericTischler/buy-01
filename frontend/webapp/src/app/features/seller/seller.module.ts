@@ -2,10 +2,11 @@ import { NgModule } from '@angular/core';
 
 import { SharedModule } from '../../shared/shared.module';
 import { SellerRoutingModule } from './seller-routing.module';
-import { SellerComponent } from './seller.component';
+import { SellerProductCreateComponent } from './seller-product-create.component';
+import { SellerProductListComponent } from './seller-product-list.component';
 
 @NgModule({
-  declarations: [SellerComponent],
+  declarations: [SellerProductListComponent, SellerProductCreateComponent],
   imports: [SharedModule, SellerRoutingModule],
 })
 export class SellerModule {}

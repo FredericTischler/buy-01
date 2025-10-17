@@ -2,7 +2,6 @@ package com.buy01.productservice.dto;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,8 +12,7 @@ public class ProductRequest {
     @Size(max = 120)
     private String name;
 
-    @NotBlank
-    @Size(max = 2048)
+    @Size(max = 500)
     private String description;
 
     @DecimalMin(value = "0.0", inclusive = false)

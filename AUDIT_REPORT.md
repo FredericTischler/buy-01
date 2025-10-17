@@ -29,12 +29,13 @@
 - **Remédiation**: Lancer les tests, puis via dashboard Angular uploader une image et créer un produit pour vérifier l'association et la signature d'URL.
 
 ## 5. Frontend Interaction
-- **Procedure testée**: Revue de l'application Angular 18 (`frontend/webapp/src/app/**`) : modules `auth`, `catalog`, `seller`, `media`, `profile`, guards et interceptors. Vérification des validations réactives et de la limite d'upload (≤ 2 MB) côté client.
-- **Résultat observé**: Parcours non exécutés dans le bac à sable (npm/Chrome indisponibles) mais implémentation conforme.
+- **Procedure testée**: Revue de l'application Angular 18 (`frontend/webapp/src/app/**`) : modules `auth`, `catalog`, `seller`, `media`, `profile`, guards et interceptors. Vérification des validations réactives, du nouveau flux `/seller/products/new` et de la limite d'upload (≤ 2 MB) côté client.
+- **Résultat observé**: Parcours non exécutés dans le bac à sable (npm/Chrome indisponibles) mais implémentation conforme, incluant un test e2e Playwright pour la création produit SELLER.
 - **Preuves / Commandes**:
   - `npm ci --prefix frontend/webapp`
   - `npm run lint --prefix frontend/webapp`
-  - `CHROME_BIN=$(npx playwright executable-path chromium) npm run test -- --watch=false --browsers=ChromeHeadless --prefix frontend/webapp`
+  - `CHROME_BIN=$(node -e "console.log(require('@playwright/test').chromium.executablePath())") npm run test -- --watch=false --browsers=ChromeHeadless --prefix frontend/webapp`
+  - `npm run e2e --prefix frontend/webapp`
   - Parcours manuel : inscription SELLER → dashboard vendeur → upload média → création produit → consultation catalogue public
 - **Statut**: ❌
 - **Remédiation**: Exécuter les commandes ci-dessus sur la machine cible puis valider manuellement les scénarios clés (auth, média, CRUD produit, catalogue).

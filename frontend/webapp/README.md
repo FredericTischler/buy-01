@@ -42,11 +42,17 @@ Adapter `environment.ts` / `environment.prod.ts` selon vos environnements.
 npm run start        # Dev server (http://localhost:4200)
 npm run lint         # ESLint (Angular + TypeScript strict)
 npm run test         # Tests unitaires Karma (ChromeHeadless)
+npm run e2e          # Tests end-to-end Playwright
 npm run build        # Build production
 npm run format:fix   # Formatage Prettier
 ```
 
 Les tests CI utilisent un Chromium headless (Playwright installe les dépendances nécessaires).
+Pour lancer les e2e en local la première fois :
+
+```bash
+npx playwright install --with-deps
+```
 
 ## Docker
 
@@ -84,6 +90,11 @@ src/
       profile/   # Profil utilisateur & mot de passe
 ```
 
+### Parcours vendeur
+
+- `/seller` : liste des produits du vendeur authentifié et accès rapide au CTA « Ajouter un produit ».
+- `/seller/products/new` : formulaire de création (nom obligatoire, prix > 0, description optionnelle) avec redirection vers le dashboard et rappel pour ajouter des médias.
+
 ## Conventions
 
 - Change detection `OnPush`
@@ -109,7 +120,10 @@ npm run start
 npm run lint
 
 # Unit tests (Karma ChromeHeadless)
-CHROME_BIN=$(npx playwright executable-path chromium) npm run test -- --watch=false --browsers=ChromeHeadless
+CHROME_BIN=$(node -e "console.log(require('@playwright/test').chromium.executablePath())") npm run test -- --watch=false --browsers=ChromeHeadless
+
+# End to end (Playwright)
+npm run e2e
 ```
 
 ## Build production

@@ -31,10 +31,10 @@
         <ui-card>
           <div class="space-y-4">
             <div class="relative overflow-hidden rounded-xl bg-muted">
-              @if (product.images?.length) {
+              @if (product.media?.length) {
                 <img
-                  [src]="product.images[selectedImageIndex()]?.url"
-                  [alt]="product.images[selectedImageIndex()]?.alt || product.name"
+                  [src]="product.media![selectedImageIndex()].secureUrl"
+                  [alt]="product.name"
                   class="h-[360px] w-full object-cover"
                 />
                 <button
@@ -60,11 +60,11 @@
               }
             </div>
 
-            @if (product.images?.length) {
+            @if (product.media?.length) {
               <div class="grid grid-cols-4 gap-3">
                 @for (
-                  image of product.images;
-                  track trackByImage($index, image);
+                  media of product.media;
+                  track trackByMedia($index, media);
                   let index = $index
                 ) {
                   <button
@@ -74,11 +74,7 @@
                     [class.border-transparent]="selectedImageIndex() !== index"
                     (click)="selectImage(index)"
                   >
-                    <img
-                      [src]="image.url"
-                      [alt]="image.alt || product.name"
-                      class="h-20 w-full object-cover"
-                    />
+                    <img [src]="media.secureUrl" [alt]="product.name" class="h-20 w-full object-cover" />
                   </button>
                 }
               </div>
@@ -89,10 +85,9 @@
         <ui-card>
           <div class="space-y-5">
             <div class="space-y-2">
-              <ui-badge variant="outline">{{ product.currency }}</ui-badge>
               <h1 class="text-3xl font-semibold text-foreground">{{ product.name }}</h1>
               <p class="text-lg font-semibold text-primary">
-                {{ product.price | currency: product.currency : 'symbol-narrow' : 'fr-FR' }}
+                {{ product.price | currency: 'EUR' : 'symbol-narrow' : 'fr-FR' }}
               </p>
             </div>
 
@@ -100,20 +95,13 @@
               <p>{{ product.description }}</p>
               <div class="grid gap-1">
                 <span class="font-medium text-foreground">Vendu par</span>
-                <span>
-                  {{ product.seller?.profile?.firstName || product.seller?.email }}
-                  {{ product.seller?.profile?.lastName || '' }}
-                </span>
+                <span>Vendeur #{{ product.sellerId | slice:0:8 }}</span>
               </div>
             </div>
 
             <div
               class="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground"
             >
-              <div class="flex items-center justify-between">
-                <span>Stock disponible</span>
-                <span class="font-medium text-foreground">{{ product.stock ?? 'N.C.' }}</span>
-              </div>
               <div class="flex items-center justify-between">
                 <span>Dernière mise à jour</span>
                 <span>{{ product.updatedAt | date: 'mediumDate' : '' : 'fr' }}</span>

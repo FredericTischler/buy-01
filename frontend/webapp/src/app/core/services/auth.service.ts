@@ -6,7 +6,7 @@ import { AuthCredentials, AuthResponse, SignupPayload } from '../models/auth.mod
 import { ToastService } from './toast.service';
 import { StorageService } from './storage.service';
 import { AuthApiService } from '../api/auth-api.service';
-import { User, UserRole } from '../models/user.model';
+import { User, UserProfile, UserRole } from '../models/user.model';
 
 interface AuthState {
   accessToken: string | null;
@@ -14,6 +14,13 @@ interface AuthState {
 }
 
 const AUTH_STORAGE_KEY = 'buy01.auth.state';
+
+type ApiUser = Partial<User> & {
+  role?: UserRole;
+  firstName?: string | null;
+  lastName?: string | null;
+  avatarMediaId?: string | null;
+};
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -35,8 +42,7 @@ export class AuthService {
 
   login(credentials: AuthCredentials): Observable<User> {
     return this.authApi.login(credentials).pipe(
-      tap(response => this.persistSession(response, !!credentials.rememberMe)),
-      map(response => response.user),
+      map(response => this.persistSession(response, !!credentials.rememberMe)),
       tap(user => {
         this.toastService.success(
           'Connexion réussie',
@@ -52,8 +58,7 @@ export class AuthService {
 
   signup(payload: SignupPayload): Observable<User> {
     return this.authApi.signup(payload).pipe(
-      tap(response => this.persistSession(response, true)),
-      map(response => response.user),
+      map(response => this.persistSession(response, true)),
       tap(() => this.toastService.success('Inscription réussie', 'Votre compte a été créé.')),
       catchError(error => {
         this.toastService.error('Inscription impossible', this.extractErrorMessage(error));
@@ -110,15 +115,17 @@ export class AuthService {
   }
 
   updateUser(user: User): void {
+    const normalized = this.normalizeUser(user as ApiUser);
     const current = this._state();
-    this._state.set({ ...current, user });
-    this.storage.setItem(AUTH_STORAGE_KEY, { ...current, user });
+    this._state.set({ ...current, user: normalized });
+    this.storage.setItem(AUTH_STORAGE_KEY, { ...current, user: normalized });
   }
 
-  private persistSession(response: AuthResponse, remember: boolean): void {
+  private persistSession(response: AuthResponse, remember: boolean): User {
+    const normalizedUser = this.normalizeUser(response.user as ApiUser);
     const payload: AuthState = {
       accessToken: response.accessToken ?? null,
-      user: response.user,
+      user: normalizedUser,
     };
 
     this._state.set(payload);
@@ -128,6 +135,8 @@ export class AuthService {
     } else {
       this.storage.removeItem(AUTH_STORAGE_KEY);
     }
+
+    return normalizedUser;
   }
 
   private clearSession(): void {
@@ -138,7 +147,10 @@ export class AuthService {
   private restoreSession(): void {
     const persisted = this.storage.getItem<AuthState>(AUTH_STORAGE_KEY);
     if (persisted?.accessToken && persisted.user) {
-      this._state.set(persisted);
+      this._state.set({
+        accessToken: persisted.accessToken,
+        user: this.normalizeUser(persisted.user as ApiUser),
+      });
     }
   }
 
@@ -154,5 +166,43 @@ export class AuthService {
     }
 
     return message ?? 'Veuillez vérifier vos identifiants.';
+  }
+
+  private normalizeUser(user: ApiUser): User {
+    const roles = user.roles && user.roles.length ? user.roles : user.role ? [user.role] : [];
+
+    const profile: UserProfile = {};
+    const firstName = (user.profile?.firstName ?? user.firstName ?? '').trim();
+    const lastName = (user.profile?.lastName ?? user.lastName ?? '').trim();
+    const avatarUrl = (user.profile?.avatarUrl ?? user.avatarMediaId ?? '').trim();
+    const phone = (user.profile?.phone ?? '').trim();
+
+    if (firstName) {
+      profile.firstName = firstName;
+    }
+    if (lastName) {
+      profile.lastName = lastName;
+    }
+    if (avatarUrl) {
+      profile.avatarUrl = avatarUrl;
+    }
+    if (phone) {
+      profile.phone = phone;
+    }
+
+    const hasProfileData = Object.keys(profile).length > 0;
+
+    const normalized: User = {
+      ...user,
+      roles,
+      profile: hasProfileData ? profile : undefined,
+    } as User;
+
+    delete (normalized as ApiUser).role;
+    delete (normalized as ApiUser).firstName;
+    delete (normalized as ApiUser).lastName;
+    delete (normalized as ApiUser).avatarMediaId;
+
+    return normalized;
   }
 }

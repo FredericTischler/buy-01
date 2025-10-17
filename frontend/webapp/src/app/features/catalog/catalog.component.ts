@@ -1,20 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
 import { ProductsApiService } from '../../core/api/products-api.service';
-import { PaginatedResponse } from '../../core/models/pagination.model';
 import { Product } from '../../core/models/product.model';
 import { ToastService } from '../../core/services/toast.service';
-
-const DEFAULT_PAGE_SIZE = 12;
 
 @Component({
   selector: 'app-catalog',
@@ -29,27 +19,19 @@ export class CatalogComponent implements OnInit {
 
   protected readonly loading = signal(true);
   protected readonly products = signal<Product[]>([]);
-  protected readonly pageMeta = signal<PaginatedResponse<Product> | null>(null);
-  protected readonly currentPage = signal(1);
-  protected readonly pageSize = DEFAULT_PAGE_SIZE;
-
-  protected readonly totalPages = computed(() => this.pageMeta()?.totalPages ?? 1);
-
   ngOnInit(): void {
-    this.loadProducts(1);
+    this.loadProducts();
   }
 
-  protected loadProducts(page: number): void {
+  protected loadProducts(): void {
     this.loading.set(true);
-    this.currentPage.set(page);
 
     this.productsApi
-      .list({ page, pageSize: this.pageSize })
+      .list()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: response => {
-          this.products.set(response.items);
-          this.pageMeta.set(response);
+        next: items => {
+          this.products.set(items);
         },
         error: () => {
           this.toast.error(
